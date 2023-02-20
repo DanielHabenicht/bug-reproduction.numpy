@@ -7,7 +7,7 @@ from tqdm import tqdm
 def task(num):
     # Just some setup from the codebase the bug seen the first time
     # you might have to increase these for the bug to show.
-    T = 10000
+    T = 20000
     N = 100
 
     K0 = np.zeros((N, N))
