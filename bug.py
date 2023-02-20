@@ -1,4 +1,5 @@
 from multiprocessing import Pool, cpu_count
+import multiprocessing
 import numpy as np
 from tqdm import tqdm
 
@@ -22,9 +23,12 @@ def task(num):
     test2 = np.multiply.outer(K1, np.ones(T))
 
 
-with Pool(processes=cpu_count() - 1) as p:
-    # Bug only shows if queing more Jobs than CPU Counts 
-    jobs = [p.apply_async(func=task, args=[num]) for num in range(cpu_count() + 2)]
+if __name__ == "__main__":
+    # Also hangs:
+    # with multiprocessing.get_context("spawn").Pool(processes=cpu_count() - 1) as p:
+    with Pool(processes=cpu_count() - 1) as p:
+        # Bug only shows if queing more Jobs than CPU Counts
+        jobs = [p.apply_async(func=task, args=[num]) for num in range(cpu_count() + 2)]
 
-    for job in tqdm(jobs):
-        job.get()
+        for job in tqdm(jobs):
+            job.get()
