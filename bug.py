@@ -1,34 +1,41 @@
-from multiprocessing import Pool, cpu_count
-import multiprocessing
-import numpy as np
-from tqdm import tqdm
+# %%
+import pandas as pd
+import matplotlib.pyplot as plt
 
+df = pd.read_csv("export.csv", index_col="Timestamp", parse_dates=True)
 
-def task(num):
-    # Just some setup from the codebase the bug seen the first time
-    # you might have to increase these for the bug to show.
-    T = 20000
-    N = 100
+start = pd.Timestamp("2019-01-15 23:00:00+0000", tz="UTC")
+end = pd.Timestamp("2019-02-01 09:50:00+0000", tz="UTC")
+print(start)
+print(df.index[0])
+print(end)
 
-    K0 = np.zeros((N, N))
-    K1 = np.zeros((N, N))
-    Kd = np.zeros((N, N))
+fig, ax = plt.subplots()
+ax.axvspan(
+    start,  # or df.index[0]
+    end,  # or df.index[-1]
+    color="red",
+    alpha=0.1,
+    lw=0,
+    zorder=1,
+)
 
-    np.fill_diagonal(K0, 0)
-    np.fill_diagonal(K1, 1)
-    np.fill_diagonal(Kd, 0)
+# Using the `ax.plot` method works
+# ax.plot(df.index, df["n1"], color="black", alpha=0.2, linestyle="solid", zorder=3)
 
-    # Commenting out either of these remove the program hanging
-    test1 = np.multiply.outer(K0, np.ones(T))
-    test2 = np.multiply.outer(K1, np.ones(T))
+df.plot(ax=ax, alpha=0.2, linestyle="solid", zorder=3)
 
+# Using `axvspan` before and after the plot actually works too
+# Only using this axvspan method results in a blank graph
+# ax.axvspan(
+#     start,
+#     end,
+#     color="red",
+#     alpha=0.1,
+#     lw=0,
+#     zorder=1,
+# )
 
-if __name__ == "__main__":
-    # Also hangs:
-    # with multiprocessing.get_context("spawn").Pool(processes=cpu_count() - 1) as p:
-    with Pool(processes=cpu_count() - 1) as p:
-        # Bug only shows if queing more Jobs than CPU Counts
-        jobs = [p.apply_async(func=task, args=[num]) for num in range(cpu_count() + 2)]
+plt.show()
 
-        for job in tqdm(jobs):
-            job.get()
+# %%
